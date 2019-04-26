@@ -14,7 +14,7 @@ class Puzzle:
     @staticmethod
     def print(grid):
         for row in grid:
-            print(row)
+            print(row, end="")
 
     @staticmethod
     def getPosition(x, grid):
@@ -47,10 +47,40 @@ class Puzzle:
             grid[row][col+1] = 0
             return grid 
 
+    def moveLeft(self, grid):
+        row, col = self.getPosition(0, grid)
+        if col == 0:
+            return False
+        else:
+            val = grid[row][col-1]
+            grid[row][col] = val
+            grid[row][col-1] = 0
+            return grid 
+
+    def moveUp(self, grid):
+        row, col = self.getPosition(0, grid)
+        if row == 0:
+            return False
+        else:
+            val = grid[row-1][col]
+            grid[row][col] = val
+            grid[row-1][col] = 0
+            return grid 
+    
+    def moveDown(self, grid):
+        row, col = self.getPosition(0, grid)
+        if row == 2:
+            return False
+        else:
+            val = grid[row+1][col]
+            grid[row][col] = val
+            grid[row+1][col] = 0
+            return grid 
+
 if __name__ == "__main__":
     grid = [[2, 8, 3], [1, 0, 4], [7, 6, 5]]
     goal = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
     puzzle = Puzzle(grid, goal, "manhattan")
     print(str(puzzle))
-    node = puzzle.moveRight(puzzle.initial_state)
+    node = puzzle.moveLeft(puzzle.initial_state)
     puzzle.print(node)

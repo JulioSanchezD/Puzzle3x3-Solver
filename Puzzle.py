@@ -4,17 +4,13 @@ class Puzzle:
         self.initial_state = initial_state
         self.goal = goal
         self.heuristic = heuristic
+        self.counter = 0
 
     def __str__(self):
         string = ""
         for index, row in enumerate(self.initial_state):
             string += str(row) + "  " + str(self.goal[index]) + "\n"
         return string
-
-    @staticmethod
-    def print(grid):
-        for row in grid:
-            print(row, end="")
 
     @staticmethod
     def getPosition(x, grid):
@@ -77,10 +73,29 @@ class Puzzle:
             grid[row+1][col] = 0
             return grid 
 
+    def expand(self, node):
+        grid = node.grid
+        return (self.moveLeft(grid), self.moveRight(grid), self.moveUp(grid), self.moveDown(grid))
+
+class Node:
+
+    def __init__(self, id, id_sup, depth, cost, grid):
+        self.id = id
+        self.id_sup = id_sup
+        self.depth = depth
+        self.cost = cost
+        self.grid = grid
+
+    def print(self):
+        for row in self.grid:
+            print(row, end="")
+
+    
+
 if __name__ == "__main__":
     grid = [[2, 8, 3], [1, 0, 4], [7, 6, 5]]
     goal = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
     puzzle = Puzzle(grid, goal, "manhattan")
-    print(str(puzzle))
-    node = puzzle.moveLeft(puzzle.initial_state)
-    puzzle.print(node)
+    # print(str(puzzle))
+    # node = puzzle.moveLeft(puzzle.initial_state)
+    # puzzle.print(node)

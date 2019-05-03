@@ -1,4 +1,5 @@
-import copy
+import copy, sys
+sys.setrecursionlimit(5000)
 
 def getPosition(x, grid):
     for row_num, row in enumerate(grid):
@@ -15,6 +16,10 @@ class Puzzle:
         self.counter = 1
         self.initial_node = Node(self.counter, 0, self.getCost(self.initial_state), 0, None, self.initial_state)
         self.counter += 1
+        self.closed_nodes = [self.initial_node]
+        self.opened_nodes = []
+        self.observed_grids = []
+        self.prohibited_operators = {'left':'right', 'right':'left', 'up':'down', 'down':'up'}
 
     def __str__(self):
         string = ""
@@ -38,22 +43,48 @@ class Puzzle:
 
     def createChilds(self, grids, node_sup):
         childs = []
+        if node_sup.operator is None:
+            prohibited_operator = None
+        else:
+            prohibited_operator = self.prohibited_operators[node_sup.operator]
         for grid, operator in grids:
-            if grid != False:
+            if grid != False and (grid not in self.observed_grids) and prohibited_operator != operator:
                 child = Node(self.counter, node_sup.id, self.getCost(grid), node_sup.depth+1, operator, grid)
                 self.counter += 1
                 childs.append(child)
         return childs
 
-    def solve(self, node):
-        if node.grid == self.goal:
+    def addChilds(self, childs):
+        for child in childs:
+            self.closed_nodes.append(child)
+        self.closed_nodes.sort(key=lambda obj: obj.cost + obj.depth)
+
+    @property
+    def solution(self):
+        sol = []
+        node = self.goal_node
+        while node.id != 1:
+            sol.append(node.operator)
+            for observed in self.opened_nodes:
+                if observed.id == node.id_sup:
+                    node = observed
+                    break
+        return sol[::-1] 
+    
+    def solve(self):
+        node = self.closed_nodes.pop(0)
+        if node.cost == 0:
+            node.print()
+            self.goal_node = node
             return True
         grids = node.expand()
+        self.opened_nodes.append(node)
+        self.observed_grids.append(node.grid)
         childs = self.createChilds(grids, node)
-        for child in childs:
-            child.print()
+        self.addChilds(childs)
+        if self.solve():
+            return True
         
-
 
 class Node:
 
@@ -66,6 +97,9 @@ class Node:
         self.grid = grid
 
     def __str__(self):
+        return f"(id={self.id}, id_sup={self.id_sup}, cost={self.cost}, depth={self.depth}, operator={self.operator})"
+
+    def __repr__(self):
         return f"(id={self.id}, id_sup={self.id_sup}, cost={self.cost}, depth={self.depth}, operator={self.operator})"
 
     def print(self):
@@ -118,10 +152,11 @@ class Node:
             return grid
 
     def expand(self):
-        return [(self.moveLeft(), "left"), (self.moveUp(), "up"), (self.moveRight(), "rigth"), (self.moveDown(), "down")]
+        return [(self.moveLeft(), "left"), (self.moveUp(), "up"), (self.moveRight(), "right"), (self.moveDown(), "down")]
 
 if __name__ == "__main__":
     grid = [[2, 8, 3], [1, 0, 4], [7, 6, 5]]
     goal = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
-    puzzle = Puzzle(grid, goal, "hamming")
-    puzzle.solve(puzzle.initial_node)
+    puzzle = Puzzle(grid, goal, "manhattan")
+    puzzle.solve()
+    print(puzzle.solution)

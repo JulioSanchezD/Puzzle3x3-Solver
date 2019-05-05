@@ -1,5 +1,5 @@
 import copy, sys
-sys.setrecursionlimit(5000)
+sys.setrecursionlimit(10000)
 
 def getPosition(x, grid):
     for row_num, row in enumerate(grid):
@@ -20,12 +20,43 @@ class Puzzle:
         self.opened_nodes = []
         self.observed_grids = []
         self.prohibited_operators = {'left':'right', 'right':'left', 'up':'down', 'down':'up'}
+        self.nodes_explored = 0
 
     def __str__(self):
         string = ""
         for index, row in enumerate(self.initial_state):
             string += str(row) + "  " + str(self.goal[index]) + "\n"
         return string
+
+    def isSolvable(self):
+        initial_nums = []
+        for row in self.initial_state:
+            for number in row:
+                if number != 0:
+                    initial_nums.append(number)
+        initial_inversions = 0
+        for index, num in enumerate(initial_nums):
+            cont = 0
+            if num != 1:
+                for num2 in initial_nums[index+1:]:
+                    if num2 < num:
+                        cont += 1
+                initial_inversions += cont
+
+        final_nums = []
+        for row in self.goal:
+            for number in row:
+                if number != 0:
+                    final_nums.append(number)
+        final_inversions = 0
+        for index, num in enumerate(final_nums):
+            cont = 0
+            if num != 1:
+                for num2 in final_nums[index+1:]:
+                    if num2 < num:
+                        cont += 1
+                final_inversions += cont
+        return ((initial_inversions + final_inversions) % 2 == 0)
 
     def getCost(self, grid):
         cost = 0
@@ -74,10 +105,10 @@ class Puzzle:
     def solve(self):
         node = self.closed_nodes.pop(0)
         if node.cost == 0:
-            node.print()
             self.goal_node = node
             return True
         grids = node.expand()
+        self.nodes_explored += 1
         self.opened_nodes.append(node)
         self.observed_grids.append(node.grid)
         childs = self.createChilds(grids, node)
@@ -155,8 +186,8 @@ class Node:
         return [(self.moveLeft(), "left"), (self.moveUp(), "up"), (self.moveRight(), "right"), (self.moveDown(), "down")]
 
 if __name__ == "__main__":
-    grid = [[2, 8, 3], [1, 0, 4], [7, 6, 5]]
-    goal = [[1, 2, 3], [8, 0, 4], [7, 6, 5]]
+    grid = [[5, 2, 8], [4, 1, 7], [0, 3, 6]]
+    goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
     puzzle = Puzzle(grid, goal, "manhattan")
-    puzzle.solve()
-    print(puzzle.solution)
+    if puzzle.isSolvable():
+        puzzle.solve()

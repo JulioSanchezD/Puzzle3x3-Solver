@@ -1,18 +1,16 @@
 import copy, sys
-sys.setrecursionlimit(10000)
-
-def getPosition(x, grid):
-    for row_num, row in enumerate(grid):
-        for col_num, num in enumerate(row):
-            if num == x:
-                return (row_num, col_num)
+sys.setrecursionlimit(20000)
+from Heuristics import getPosition
+import Heuristics as heuristics
 
 class Puzzle:
 
-    def __init__(self, initial_state, goal, heuristic="hamming"):
+    def __init__(self, initial_state, goal, hamming, manhattan, linear):
         self.initial_state = initial_state
         self.goal = goal
-        self.heuristic = heuristic
+        self.hamming = hamming
+        self.manhattan = manhattan
+        self.linear = linear
         self.counter = 1
         self.initial_node = Node(self.counter, 0, self.getCost(self.initial_state), 0, None, self.initial_state)
         self.counter += 1
@@ -60,16 +58,12 @@ class Puzzle:
 
     def getCost(self, grid):
         cost = 0
-        if self.heuristic == "hamming":
-            for i in range(0, 3):
-                for j in range(0, 3):
-                    if grid[i][j] != self.goal[i][j]:
-                        cost += 1
-        else:
-            for r1 in range(0, 3):
-                for c1 in range(0, 3):
-                    r2, c2 = getPosition(grid[r1][c1], self.goal)
-                    cost += abs(r2 - r1) + abs(c2 - c1)
+        if self.hamming:
+            cost += heuristics.Hamming(grid, self.goal)
+        if self.manhattan:
+            cost += heuristics.Manhattan(grid, self.goal)        
+        if self.linear:
+            cost += heuristics.LinearConflict(grid, self.goal)
         return cost
 
     def createChilds(self, grids, node_sup):
@@ -186,8 +180,15 @@ class Node:
         return [(self.moveLeft(), "left"), (self.moveUp(), "up"), (self.moveRight(), "right"), (self.moveDown(), "down")]
 
 if __name__ == "__main__":
-    grid = [[5, 2, 8], [4, 1, 7], [0, 3, 6]]
+    grid = [[4, 2, 5], [1, 0, 6], [3, 8, 7]]
     goal = [[1, 2, 3], [4, 5, 6], [7, 8, 0]]
-    puzzle = Puzzle(grid, goal, "manhattan")
+    puzzle = Puzzle(grid, goal, hamming=True, manhattan=True, linear=True)
     if puzzle.isSolvable():
-        puzzle.solve()
+        try:
+            puzzle.solve()
+        except:
+            print("Recursion limit exceded")
+        else:
+            print(puzzle.solution)
+    else:
+        print("Not solvable")

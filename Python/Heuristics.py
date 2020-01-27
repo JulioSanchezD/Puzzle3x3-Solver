@@ -21,13 +21,15 @@ def LinearConflict(grid, goal):
                 cost += 2
     return cost
 
+
 def getLCPairs(row1, row2):
     tx = []
     for num in row1:
         if num in row2 and num != 0:
             tx.append(num)
-    
+
     return tx if len(tx) > 1 else False
+
 
 def notIn(list1, list2):
     for num in list1:
@@ -35,30 +37,35 @@ def notIn(list1, list2):
             return False
     return True
 
+
 def transpose(matrix):
     return [[matrix[j][i] for j in range(len(matrix))] for i in range(len(matrix[0]))]
 
+
 def Hamming(grid, goal):
-        cost = 0
-        for i in range(0, 3):
-            for j in range(0, 3):
-                if grid[i][j] != goal[i][j]:
-                    cost += 1
-        return cost
+    cost = 0
+    for i in range(0, 3):
+        for j in range(0, 3):
+            if grid[i][j] != goal[i][j]:
+                cost += 1
+    return cost
+
 
 def Manhattan(grid, goal):
-        cost = 0
-        for r1 in range(0, 3):
-            for c1 in range(0, 3):
-                r2, c2 = getPosition(grid[r1][c1], goal)
-                cost += abs(r2 - r1) + abs(c2 - c1)
-        return cost
+    cost = 0
+    for r1 in range(0, 3):
+        for c1 in range(0, 3):
+            r2, c2 = getPosition(grid[r1][c1], goal)
+            cost += abs(r2 - r1) + abs(c2 - c1)
+    return cost
+
 
 def getPosition(x, grid):
     for row_num, row in enumerate(grid):
         for col_num, num in enumerate(row):
             if num == x:
-                return (row_num, col_num)
+                return row_num, col_num
+
 
 if __name__ == "__main__":
     grid = [[4, 2, 5], [1, 0, 6], [3, 8, 7]]
